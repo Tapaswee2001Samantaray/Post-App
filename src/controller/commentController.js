@@ -60,7 +60,13 @@ const deleteComment = async (req, res) => {
 
         if (!commentData) return res.status(404).send({ status: false, message: "comment not found" })
 
-        if (commentData.userId != userId) return res.status(403).send({ status: false, message: "you can't delete this comment" })
+        let postId = commentData.postId;
+
+        let postData = await postModel.findById(postId);
+
+        let ownerOfPost = postData.userId;
+
+        if (commentData.userId != userId && ownerOfPost != userId) return res.status(403).send({ status: false, message: "you can't delete this comment" })
 
         await commentModel.findOneAndUpdate({ _id: commentId }, { isDeleted: true });
 
@@ -96,7 +102,7 @@ const replyComment = async (req, res) => {
         if (userOfPost != userId) return res.status(403).send({ status: false, message: "You can't reply on the comment" })
 
         //isReply=true need to be done
-        let replyData = await commentModel.findOneAndUpdate({ _id: commentId }, { $push: { replies: replies } }, { new: true });
+        let replyData = await commentModel.findOneAndUpdate({ _id: commentId }, { $push: { replies: replies }, $set: { isReply: true } }, { new: true });
 
         return res.status(200).send({ status: true, message: "successfully replied", data: replyData });
     }
@@ -106,5 +112,21 @@ const replyComment = async (req, res) => {
 }
 
 
+const getComments = async (req, res) => {
+    try {
+        let postId = req.params.postId;
 
-module.exports = { postComment, updateComment, deleteComment, replyComment };
+        let postData = await postModel.findOne({ _id: postId, isDeleted: false });
+
+        if (!postData) return res.status(404).send({ status: false, message: "no such post found" });
+
+        let commentData = await commentModel.find({ postId: postId }).populate("postId").select({ __v: 0 });
+
+        return res.status(200).send({ status: true, message: "success", data: commentData });
+    }
+    catch (err) {
+        return res.status(500).send({ status: false, message: err.message });
+    }
+}
+
+module.exports = { postComment, updateComment, deleteComment, replyComment, getComments };
