@@ -1,9 +1,12 @@
 let express = require("express");
+const multer=require("multer");
 let mongoose = require("mongoose");
 let route = require("./route/route");
 let app = express();
 
 app.use(express.json());
+app.use(multer().any());
+
 mongoose.set("strictQuery", true);
 
 mongoose.connect("mongodb+srv://Tapaswee2001Samantaray:jecky2001@cluster0.zinufff.mongodb.net/Post-App",
