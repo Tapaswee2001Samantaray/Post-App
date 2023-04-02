@@ -1,19 +1,21 @@
 const userModel = require("../model/userModel")
-const jwt=require("jsonwebtoken")
+const jwt = require("jsonwebtoken")
 
 const createUser = async (req, res) => {
+    res.setHeader("Access-Control-Allow-Origin", "*");
     try {
         let { fName, lName, email, password, gender, dob, city } = req.body;
         if (!fName || !lName || !email || !password || !dob) return res.status(400).send({ status: false, message: "required field are mandatory" })
-        let createdUser=await userModel.create(req.body);
-        return res.status(201).send({status:true,data:createdUser});
+        let createdUser = await userModel.create(req.body);
+        return res.status(201).send({ status: true, data: createdUser });
     }
     catch (err) {
         return res.status(500).send({ status: false, message: err.message })
     }
 }
 
-const loginUser = async function ( req , res ) {
+const loginUser = async function (req, res) {
+    res.setHeader("Access-Control-Allow-Origin", "*");
     try {
         const data = req.body;
         let { email, password } = data;
@@ -50,7 +52,7 @@ const loginUser = async function ( req , res ) {
             }, 'postApp');
 
             res.setHeader("x-api-key", token);
-            res.status(200).send({ status: true, message: "Successfully Login.", data: { "token": token} });
+            res.status(200).send({ status: true, message: "Successfully Login.", data: { "token": token } });
         } else {
             return res.status(400).send({ status: false, message: "Body can not be empty" });
         }
@@ -59,4 +61,4 @@ const loginUser = async function ( req , res ) {
     }
 }
 
-module.exports={createUser,loginUser};
+module.exports = { createUser, loginUser };
